@@ -3,7 +3,7 @@
  * 
  * @copyright 2014 Jonathan Campbell (http://www.healsdata.com/)
  * @license MIT License http://www.opensource.org/licenses/mit-license.php
- * @version 0.1.1 
+ * @version 0.2.0
  */
 
 function getKnownPortals(sheet) {
@@ -65,7 +65,7 @@ function finishSync() {
 
 function findSubmissions() {
   var subjectStart = "Ingress Portal Submitted: ";
-  var search = 'from:(ingress-support@google.com) subject:"' + subjectStart + '"';
+  var search = '(from:(ingress-support@google.com) OR from:(jon@healsdata.com)) AND (subject:"Ingress Portal Submitted:" OR subject:"Portal submission confirmation:")';
   
   var sheet = SpreadsheetApp.getActiveSheet();
   var knownPortals = getKnownPortals(sheet);   
@@ -82,7 +82,7 @@ function findSubmissions() {
     
     var subject = msg.getSubject();
     var submitted = msg.getDate();
-    var portalName = subject.replace(subjectStart, '');
+    var portalName = subject.substring(subject.indexOf(":") + 1).trim();
     
     var searchResult = knownPortals.findIndex(portalName);
     
@@ -125,22 +125,33 @@ function updateStatus() {
     var writeRow = i + 2;
     var writeCell = sheet.getRange('C' + writeRow);    
     
-    var fragments = ['Rejected', 'Live', 'Duplicate'];
+    var fragments = ['Rejected', 'Live', 'Duplicate', 'existing', 'accepted'];
+    var statuses = ['Rejected', 'Live', 'Duplicate', 'Rejected', 'Live'];
     
-    for (var x = 0; x < fragments.length; x++) {
-      var subjectStart = "Ingress Portal ";
+    for (var x = 0; x < fragments.length; x++) {      
       var fragment = fragments[x];
-      subjectStart = subjectStart + fragment + ": " + portalName;
-  
-      var search = 'from:(ingress-support@google.com) subject:"' + subjectStart + '"';    
-    
+      var status = statuses[x];
+      
+      if (fragment.toLowerCase() == fragment) {
+        // Lowercase strings appear in the email body -- the new email format has a generic subject.
+        var subjectStart = "Portal review complete";
+        subjectStart = subjectStart + ": " + portalName;  
+        var search = '(from:(ingress-support@google.com) OR from:(jon@healsdata.com)) subject:"' + subjectStart + '" ' + fragment;
+      } else {
+        // Old format put the response right in the subject.
+        var subjectStart = "Ingress Portal ";
+        subjectStart = subjectStart + fragment + ": " + portalName;  
+        var search = '(from:(ingress-support@google.com) OR from:(jon@healsdata.com)) subject:"' + subjectStart + '"';    
+      } 
+      
+      
       var threads = GmailApp.search(search, 0, 1);           
       numSearches++;
       
       var foundStatus = false;
       
       if (threads.length > 0) {
-        writeCell.setValue(fragment);
+        writeCell.setValue(status);
         
         var msg = threads[0].getMessages()[0];
         var submitted = msg.getDate();        
