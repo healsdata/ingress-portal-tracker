@@ -3,7 +3,7 @@
  * 
  * @copyright 2014 Jonathan Campbell (http://www.healsdata.com/)
  * @license MIT License http://www.opensource.org/licenses/mit-license.php
- * @version 0.2.0
+ * @version 0.2.1
  */
 
 function getKnownPortals(sheet) {
@@ -125,8 +125,8 @@ function updateStatus() {
     var writeRow = i + 2;
     var writeCell = sheet.getRange('C' + writeRow);    
     
-    var fragments = ['Rejected', 'Live', 'Duplicate', 'existing', 'accepted'];
-    var statuses = ['Rejected', 'Live', 'Duplicate', 'Rejected', 'Live'];
+    var fragments = ['existing', 'accepted', 'rejection', 'Rejected', 'Live', 'Duplicate'];
+    var statuses = ['Duplicate', 'Live', 'Rejected', 'Rejected', 'Live', 'Duplicate'];
     
     for (var x = 0; x < fragments.length; x++) {      
       var fragment = fragments[x];
